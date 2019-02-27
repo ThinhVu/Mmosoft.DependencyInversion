@@ -65,9 +65,15 @@ namespace Mmosoft.DependencyInversion
 
                 for (int i = 0; i < paramInfos.Length; i++)
                 {
-                    MethodInfo resolverForParamType = _genericResolver.MakeGenericMethod(paramInfos[i].ParameterType);
-                    _resolverCache[paramInfos[i].ParameterType] = resolverForParamType;
-                    @params[i] = resolverForParamType.Invoke(null, null);
+                    if (!_resolverCache.ContainsKey(paramInfos[i].ParameterType))
+                    {
+                        _resolverCache[paramInfos[i].ParameterType] = _genericResolver.MakeGenericMethod(paramInfos[i].ParameterType);
+                    }
+                    
+                    @params[i] = _resolverCache[paramInfos[i].ParameterType].Invoke(
+                        null, // invoking static method doesn't require object instance => pass null
+                        null // Resolve method don't have any parameters => pass null
+                    );
                 }
 
                 return ctorInfos.Invoke(@params);
